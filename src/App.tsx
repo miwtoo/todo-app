@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import TaskList from "./components/TaskList";
 
-interface ITODOList {
+export interface ITODOList {
   text: string;
   mask: boolean;
 }
@@ -8,6 +9,23 @@ interface ITODOList {
 function App() {
   const [value, setValue] = useState<string>("");
   const [taskList, setTaskList] = useState<ITODOList[]>([]);
+
+  useEffect(() => {
+    const localTaskList = localStorage.getItem('taskList')
+    if (localTaskList) {
+      setTaskList(JSON.parse(localTaskList))
+    }
+
+    const localValue = localStorage.getItem('value')
+    if (localValue) {
+      setValue(JSON.parse(localValue))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('taskList', JSON.stringify(taskList))
+    localStorage.setItem('value', JSON.stringify(value))
+  }, [taskList, value])
 
   const onClickAddTask = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,28 +52,19 @@ function App() {
 
   return (
     <div>
-      <form onSubmit={onClickAddTask}>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
-        <button type="submit">Add</button>
-      </form>
-
-      {taskList.length > 0 && (
-        <ul>
-          {taskList.map((t, i) => {
-            return <>
-              <li key={i}>
-                <span>{t.text}</span>
-                <button onClick={() => onDoneTask(i)}>/</button>
-                <button onClick={() => onDeleteTask(i)}>x</button>
-              </li>
-            </>
-          })}
-        </ul>
-      )}
+      <div className="shadow-xl m-5 p-5 rounded-lg backdrop-blur-sm bg-white/30">
+        <div className="text-2xl text-center font-bold mb-3">Miwtoo Todo List</div>
+        <form onSubmit={onClickAddTask} className="flex">
+          <input
+            className="w-full border border-gray-200 rounded p-2"
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+          <button type="submit" className="border border-gray-800 rounded px-2 mx-2">Add</button>
+        </form>
+        <TaskList taskList={taskList} onDoneTask={onDoneTask} onDeleteTask={onDeleteTask}></TaskList>
+     </div>
     </div>
   );
 }
